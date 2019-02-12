@@ -21,22 +21,22 @@ public class FirebaseSettingRepository implements SettingRepository {
     private static final String SHARED_PREFS_NAME_FORMAT = "shared_prefs__%s";
 
     private String keyName;
+    private String uid;
     private String sharedPrefsName;
-    private FirebaseAuth firebaseAuth;
     private DatabaseReference firebaseDbRef;
 
     /* CONSTRUCTORS */
     public FirebaseSettingRepository() {
         this.keyName = DEFAULT_FIREBASE_KEY;
         this.sharedPrefsName = String.format(SHARED_PREFS_NAME_FORMAT, this.keyName);
-        this.firebaseAuth = FirebaseAuth.getInstance();
+        this.uid = FirebaseAuth.getInstance().getUid();
         this.firebaseDbRef = FirebaseDatabase.getInstance().getReference();
     }
 
-    public FirebaseSettingRepository(String firebasePath) {
+    public FirebaseSettingRepository(String firebasePath, String uid) {
         this.keyName = firebasePath;
         this.sharedPrefsName = String.format(SHARED_PREFS_NAME_FORMAT, this.keyName);
-        this.firebaseAuth = FirebaseAuth.getInstance();
+        this.uid = uid;
         this.firebaseDbRef = FirebaseDatabase.getInstance().getReference();
     }
 
@@ -80,7 +80,7 @@ public class FirebaseSettingRepository implements SettingRepository {
     private <T extends SyncableSetting> void saveRemoteInstance(T syncedSetting) {
         this.firebaseDbRef
                 .child(this.keyName)
-                .child(this.firebaseAuth.getCurrentUser().getUid())
+                .child(this.uid)
                 .setValue(syncedSetting);
     }
 
@@ -97,7 +97,7 @@ public class FirebaseSettingRepository implements SettingRepository {
         final Context application = context.getApplicationContext();
         this.firebaseDbRef
                 .child(this.keyName)
-                .child(this.firebaseAuth.getCurrentUser().getUid())
+                .child(this.uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
